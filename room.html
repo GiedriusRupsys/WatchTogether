@@ -1,34 +1,31 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Watch Together - Bookmarklet</title>
+  <title>Watch Together - Bookmarklet Generator</title>
   <script>
-    const scriptURL = "https://giedriusrupsys.github.io/WatchTogether/inject.js";
+    function createBookmarklet() {
+      const username = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
+      const room = encodeURIComponent(document.getElementById("room").value.trim() || "default");
 
-   function createBookmarklet() {
-    const u = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
-    const r = encodeURIComponent(document.getElementById("room").value.trim() || "default");
-  
-    const bookmarkletCode = `javascript:(function(){
-      var s=document.createElement('script');
-      s.src='${scriptURL}?user=${u}&room=${r}';
-      document.body.appendChild(s);
-    })();`;
-  
-    // Show bookmarklet
-    const a = document.getElementById("bookmarklet");
-    a.href = bookmarkletCode;
-    a.textContent = "🎬 Drag Me to Bookmarks Bar";
-    a.classList.remove("hidden");
-  
-    // Show copyable code
-    document.getElementById("js-code").value = bookmarkletCode;
-    document.getElementById("code-section").classList.remove("hidden");
-  }
+      const injectUrl = `https://giedriusrupsys.github.io/WatchTogether/inject.js?user=${username}&room=${room}`;
+      const bookmarkletCode = `javascript:(function(){var s=document.createElement('script');s.src='${injectUrl}';document.body.appendChild(s);})();`;
+      const shareUrl = injectUrl;
 
-    function copyCode() {
-      const codeBox = document.getElementById("js-code");
+      document.getElementById("bookmarklet").href = bookmarkletCode;
+      document.getElementById("bookmarklet").textContent = "🎬 Drag Me to Bookmarks Bar";
+      document.getElementById("bookmarklet").classList.remove("hidden");
+
+      document.getElementById("js-code").value = bookmarkletCode;
+      document.getElementById("code-section").classList.remove("hidden");
+
+      document.getElementById("share-url").value = shareUrl;
+      document.getElementById("share-section").classList.remove("hidden");
+    }
+
+    function copyCode(id) {
+      const codeBox = document.getElementById(id);
       codeBox.select();
       codeBox.setSelectionRange(0, 99999);
       document.execCommand("copy");
@@ -39,6 +36,7 @@
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
   <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md space-y-4 text-center">
     <h1 class="text-2xl font-bold text-cyan-400">Watch Together</h1>
+    <p class="text-sm text-gray-300">Sync Netflix, Prime, YouTube with friends + Chat in real-time</p>
 
     <input id="username" type="text" placeholder="Your name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
     <input id="room" type="text" placeholder="Room name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
@@ -48,9 +46,15 @@
     <a id="bookmarklet" class="mt-4 inline-block text-cyan-400 font-bold hover:underline hidden" href="#">🎬 Drag Me to Bookmarks Bar</a>
 
     <div id="code-section" class="space-y-2 hidden text-left mt-4">
-      <label class="block text-sm font-semibold mb-1 text-gray-300">📋 Or copy the URL-safe code:</label>
+      <label class="block text-sm font-semibold mb-1 text-gray-300">📋 Or copy the bookmarklet code:</label>
       <textarea id="js-code" class="w-full p-3 bg-gray-700 text-white rounded border border-gray-600 text-xs font-mono" readonly></textarea>
-      <button onclick="copyCode()" class="mt-1 bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-500 text-sm">Copy Code</button>
+      <button onclick="copyCode('js-code')" class="mt-1 bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-500 text-sm">Copy Code</button>
+    </div>
+
+    <div id="share-section" class="space-y-2 hidden text-left mt-4">
+      <label class="block text-sm font-semibold mb-1 text-gray-300">🔗 Share this link with friends:</label>
+      <textarea id="share-url" class="w-full p-3 bg-gray-700 text-white rounded border border-gray-600 text-xs font-mono" readonly></textarea>
+      <button onclick="copyCode('share-url')" class="mt-1 bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-500 text-sm">Copy Link</button>
     </div>
   </div>
 </body>
