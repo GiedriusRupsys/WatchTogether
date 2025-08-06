@@ -43,11 +43,10 @@
     const actionsRef = db.ref(`${room}/actions`);
     const chatRef = db.ref(`${room}/chat`);
     const presenceRef = db.ref(`${room}/presence/${username}`);
+    const presenceListRef = db.ref(`${room}/presence`);
 
     presenceRef.set(true);
     presenceRef.onDisconnect().remove();
-
-    const presenceListRef = db.ref(`${room}/presence`);
 
     const video = document.querySelector("video");
     if (!video) {
@@ -57,17 +56,15 @@
 
     const container = document.createElement("div");
     container.innerHTML = `
-      <div id="infoBox" class="fixed top-4 right-4 z-[99999] bg-gray-900 text-white text-sm rounded-xl shadow-lg p-4 space-y-2 w-80 font-sans">
-        <div class="text-cyan-400 font-semibold text-base">🎬 Watch Together</div>
-        <div><strong>Room:</strong> <span id="roomName">${room}</span></div>
-        <div><strong>Users (<span id="userCount">1</span>):</strong> <span id="userList"></span></div>
-        <div><strong>Activity:</strong>
-          <ul id="logBox" class="list-disc list-inside space-y-1 text-xs text-gray-300 mt-1"></ul>
-        </div>
+      <div id="infoBox" class="fixed top-4 right-4 z-[99999] bg-gray-900/90 text-white text-sm rounded-xl shadow-2xl p-4 space-y-2 w-80 font-sans backdrop-blur-md border border-gray-700 opacity-0 transition-opacity duration-500">
+        <div><span class="text-gray-400">Room</span>: <span id="roomName" class="text-gray-200">${room}</span></div>
+        <div><span class="text-gray-400">Users</span> (<span id="userCount">1</span>): <span id="userList" class="text-gray-300"></span></div>
+        <ul id="logBox" class="list-none space-y-1 text-xs text-gray-300 mt-1"></ul>
       </div>
     `;
     document.body.appendChild(container);
 
+    const infoBox = document.getElementById("infoBox");
     const logBox = document.getElementById("logBox");
     const userList = document.getElementById("userList");
     const userCount = document.getElementById("userCount");
@@ -81,33 +78,65 @@
       }
     };
 
+    let hideTimeout;
+    const showBox = () => {
+      infoBox.classList.remove("opacity-0");
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        if (!video.paused) infoBox.classList.add("opacity-0");
+      }, 3000);
+    };
+    document.addEventListener("mousemove", showBox);
+    video.addEventListener("play", () => infoBox.classList.add("opacity-0"));
+    video.addEventListener("pause", () => infoBox.classList.remove("opacity-0"));
+
     presenceListRef.on("value", snapshot => {
       const users = snapshot.val() || {};
-      userList.textContent = Object.keys(users).join(", ");
-      userCount.textContent = Object.keys(users).length;
+      const names = Object.keys(users);
+      userList.textContent = names.join(", ");
+      userCount.textContent = names.length;
     });
 
     actionsRef.on("child_added", snap => {
       const action = snap.val();
       if (action.username === username) return;
 
-      if (action.type === "play") video.play();
-      if (action.type === "pause") video.pause();
-      if (action.type === "seek") video.currentTime = action.time;
-
-      log(`▶ [${action.username}] ${action.type} ${action.time ? `@ ${Math.round(action.time)}s` : ""}`);
+      if (action.type === "play") {
+        video.play();
+        log(`▶ ${action.username} played`);
+      }
+      if (action.type === "pause") {
+        video.pause();
+        log(`⏸ ${action.username} paused`);
+      }
+      if (action.type === "seek") {
+        video.currentTime = action.time;
+        log(`⏩ ${action.username} seeked to ${Math.round(action.time)}s`);
+      }
     });
 
-    video.addEventListener("play", () => actionsRef.push({ type: "play", username }));
-    video.addEventListener("pause", () => actionsRef.push({ type: "pause", username }));
-    video.addEventListener("seeked", () => actionsRef.push({ type: "seek", time: video.currentTime, username }));
+    video.addEventListener("play", () => {
+      actionsRef.push({ type: "play", username });
+      log(`▶ You played`);
+    });
+
+    video.addEventListener("pause", () => {
+      actionsRef.push({ type: "pause", username });
+      log(`⏸ You paused`);
+    });
+
+    video.addEventListener("seeked", () => {
+      actionsRef.push({ type: "seek", time: video.currentTime, username });
+      log(`⏩ You seeked to ${Math.round(video.currentTime)}s`);
+    });
 
     chatRef.on("child_added", snap => {
       const msg = snap.val();
-      log(`💬 [${msg.username}]: ${msg.text}`);
+      log(`💬 ${msg.username}: ${msg.text}`);
     });
 
     log(`👋 Joined as ${username}`);
+    showBox();
   };
 
   loadTailwind();
