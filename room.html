@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Watch Together</title>
+  <title>Watch Together - Bookmarklet</title>
   <script>
     function createBookmarklet() {
       const user = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
       const room = encodeURIComponent(document.getElementById("room").value.trim() || "default");
-      const bookmarkletCode = \`javascript:(function(){var s=document.createElement('script');s.src='https://giedriusrupsys.github.io/WatchTogether/inject.js?user=\${user}&room=\${room}';document.body.appendChild(s);})();\`;
 
-      // Display bookmarklet
+      const bookmarkletCode =
+        `javascript:(function(){var s=document.createElement('script');s.src='https://giedriusrupsys.github.io/WatchTogether/inject.js?user=${user}&room=${room}';document.body.appendChild(s);})();`;
+
       const a = document.getElementById("bookmarklet");
       a.href = bookmarkletCode;
       a.textContent = "🎬 Drag Me to Bookmarks Bar";
       a.classList.remove("hidden");
 
-      // Show copyable code
       document.getElementById("js-code").value = bookmarkletCode;
       document.getElementById("code-section").classList.remove("hidden");
     }
@@ -27,46 +26,35 @@
       codeBox.setSelectionRange(0, 99999);
       document.execCommand("copy");
     }
-
-    function generateShareLink() {
-      const video = encodeURIComponent(document.getElementById("videoURL").value.trim());
-      const link = document.getElementById("generatedLink");
-      link.value = video ? window.location.origin + window.location.pathname + "?video=" + video : "";
-    }
-
-    function openVideo() {
-      const videoURL = document.getElementById("videoURL").value.trim();
-      if (videoURL) window.open(videoURL, "_blank");
-    }
   </script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
-  <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md space-y-4 text-center">
-    <h1 class="text-2xl font-bold text-cyan-400">Watch Together</h1>
-    <p class="text-sm text-gray-300">Sync Netflix, Prime, YouTube + Chat</p>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen px-4">
+  <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md space-y-4 text-center">
+    <h1 class="text-3xl font-bold text-cyan-400">Watch Together</h1>
+    <p class="text-sm text-gray-300">Sync Netflix, Prime, YouTube with friends</p>
 
-    <input id="username" type="text" placeholder="Your name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
-    <input id="room" type="text" placeholder="Room name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
+    <input id="username" type="text" placeholder="Your name"
+      class="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring" />
+    <input id="room" type="text" placeholder="Room name"
+      class="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring" />
 
-    <button onclick="createBookmarklet()" class="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-500 font-semibold w-full">Generate Bookmarklet</button>
-    <a id="bookmarklet" class="mt-2 inline-block text-cyan-400 font-bold hover:underline hidden" href="#">🎬 Drag Me to Bookmarks Bar</a>
+    <button onclick="createBookmarklet()"
+      class="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-500 font-semibold w-full">
+      Generate Bookmarklet
+    </button>
+
+    <a id="bookmarklet" class="mt-4 inline-block text-cyan-400 font-bold hover:underline hidden" href="#">
+      🎬 Drag Me to Bookmarks Bar
+    </a>
 
     <div id="code-section" class="space-y-2 hidden text-left mt-4">
-      <label class="block text-sm font-semibold mb-1 text-gray-300">📋 Or copy the code:</label>
-      <textarea id="js-code" class="w-full p-3 bg-gray-700 text-white rounded border border-gray-600 text-xs font-mono" readonly></textarea>
-      <button onclick="copyCode()" class="mt-1 bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-500 text-sm">Copy Code</button>
+      <label class="block text-sm font-semibold text-gray-300">📋 Or copy the code:</label>
+      <textarea id="js-code"
+        class="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 text-xs font-mono" readonly></textarea>
+      <button onclick="copyCode()"
+        class="mt-1 bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-500 text-sm">Copy Code</button>
     </div>
-
-    <hr class="border-gray-600 my-4" />
-
-    <label class="block text-sm font-semibold text-gray-300">🔗 Video Link (YouTube / Netflix / Prime)</label>
-    <input id="videoURL" type="text" placeholder="https://..." class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
-    <div class="flex space-x-2 mt-2">
-      <button onclick="openVideo()" class="flex-1 bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-500 font-semibold">Open Video</button>
-      <button onclick="generateShareLink()" class="flex-1 bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 font-semibold">Generate Link</button>
-    </div>
-    <input id="generatedLink" readonly class="w-full mt-2 p-2 bg-gray-700 text-white rounded border border-gray-600 text-xs font-mono" />
   </div>
 </body>
 </html>
