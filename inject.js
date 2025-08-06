@@ -13,9 +13,9 @@
   const firebaseConfig = {
     apiKey: "AIzaSyB0mhn8-HiDZviiIXVNIFmmgbfGcg7m-MI",
     authDomain: "watch-together-8f006.firebaseapp.com",
-    databaseURL: "https://watch-together-8f006-default-rtdb.firebaseio.com",  // ✅ FIXED
+    databaseURL: "https://watch-together-8f006-default-rtdb.firebaseio.com",
     projectId: "watch-together-8f006",
-    storageBucket: "watch-together-8f006.firebasestorage.app",
+    storageBucket: "watch-together-8f006.appspot.com",
     messagingSenderId: "1050874568804",
     appId: "1:1050874568804:web:d87ddaeaa0112e3399bf71"
   };
@@ -48,7 +48,6 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const actionsRef = db.ref(`${room}/actions`);
-    const chatRef = db.ref(`${room}/chat`);
     const presenceRef = db.ref(`${room}/presence/${username}`);
     const presenceListRef = db.ref(`${room}/presence`);
 
@@ -61,13 +60,17 @@
       return;
     }
 
+    // UI container
     const container = document.createElement("div");
     container.innerHTML = `
       <div id="infoBox" class="fixed top-1/2 -translate-y-1/2 right-4 z-[99999] text-white text-sm rounded-xl shadow-2xl p-4 space-y-2 w-80 font-sans transition-opacity duration-500 opacity-0"
-        style="background-color: rgba(28, 28, 30, 0.6); backdrop-filter: blur(8px); border: 1px solid #444;">
-        <div><span style="color:#ccc;">Room</span>: <span id="roomName">${room}</span></div>
-        <div><span style="color:#ccc;">Users</span> (<span id="userCount">1</span>): <span id="userList"></span></div>
-        <ul id="logBox" class="list-none space-y-1 text-xs mt-1 text-gray-100"></ul>
+        style="background-color: rgba(28, 28, 30, 0.5); backdrop-filter: blur(12px); border: 1px solid #555;">
+        <div class="flex justify-between">
+          <div><span class="text-gray-400">Room</span>: <span id="roomName">${room}</span></div>
+          <div id="connectionStatus" class="text-green-400">Connected</div>
+        </div>
+        <div><span class="text-gray-400">Users</span> (<span id="userCount">1</span>): <span id="userList"></span></div>
+        <ul id="logBox" class="list-none space-y-1 text-xs mt-1 text-gray-200"></ul>
       </div>
     `;
     document.body.appendChild(container);
@@ -76,6 +79,7 @@
     const logBox = document.getElementById("logBox");
     const userList = document.getElementById("userList");
     const userCount = document.getElementById("userCount");
+    const connectionStatus = document.getElementById("connectionStatus");
 
     const log = (msg) => {
       const li = document.createElement("li");
@@ -105,42 +109,63 @@
       userCount.textContent = names.length;
     });
 
+    // Prevent feedback loop
+    let lastAction = { type: null, time: null };
+
     actionsRef.on("child_added", snap => {
       const action = snap.val();
       if (action.username === username) return;
 
-      if (action.type === "play") {
+      if (action.type === "play" && video.paused) {
         video.play();
         log(`▶ ${action.username} played`);
+        lastAction = action;
       }
-      if (action.type === "pause") {
+
+      if (action.type === "pause" && !video.paused) {
         video.pause();
         log(`⏸ ${action.username} paused`);
+        lastAction = action;
       }
-      if (action.type === "seek") {
+
+      if (action.type === "seek" && Math.abs(video.currentTime - action.time) > 1) {
         video.currentTime = action.time;
         log(`⏩ ${action.username} seeked to ${formatTime(action.time)}`);
+        lastAction = action;
       }
     });
 
     video.addEventListener("play", () => {
-      actionsRef.push({ type: "play", username });
-      log(`▶ You played`);
+      if (lastAction.type !== "play") {
+        actionsRef.push({ type: "play", username });
+        log(`▶ You played`);
+        lastAction = { type: "play" };
+      }
     });
 
     video.addEventListener("pause", () => {
-      actionsRef.push({ type: "pause", username });
-      log(`⏸ You paused`);
+      if (lastAction.type !== "pause") {
+        actionsRef.push({ type: "pause", username });
+        log(`⏸ You paused`);
+        lastAction = { type: "pause" };
+      }
     });
 
     video.addEventListener("seeked", () => {
-      actionsRef.push({ type: "seek", time: video.currentTime, username });
-      log(`⏩ You seeked to ${formatTime(video.currentTime)}`);
+      const time = video.currentTime;
+      if (lastAction.type !== "seek" || Math.abs(lastAction.time - time) > 1) {
+        actionsRef.push({ type: "seek", time, username });
+        log(`⏩ You seeked to ${formatTime(time)}`);
+        lastAction = { type: "seek", time };
+      }
     });
 
-    chatRef.on("child_added", snap => {
-      const msg = snap.val();
-      log(`💬 ${msg.username}: ${msg.text}`);
+    // Firebase connection status
+    firebase.database().ref(".info/connected").on("value", (snap) => {
+      const connected = snap.val() === true;
+      connectionStatus.textContent = connected ? "Connected" : "Disconnected";
+      connectionStatus.classList.toggle("text-green-400", connected);
+      connectionStatus.classList.toggle("text-red-400", !connected);
     });
 
     log(`👋 Joined as ${username}`);
