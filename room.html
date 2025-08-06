@@ -6,22 +6,26 @@
   <script>
     const scriptURL = "https://giedriusrupsys.github.io/WatchTogether/inject.js";
 
-    function createBookmarklet() {
-      const u = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
-      const r = encodeURIComponent(document.getElementById("room").value.trim() || "default");
-
-      const bookmarkletCode = "javascript:(function(){var s=document.createElement('script');s.src='https://giedriusrupsys.github.io/WatchTogether/inject.js?user=TestUser&room=testroom';document.body.appendChild(s);})();";
-      
-      // Show bookmarklet
-      const a = document.getElementById("bookmarklet");
-      a.href = bookmarkletCode;
-      a.textContent = "🎬 Drag Me to Bookmarks Bar";
-      a.classList.remove("hidden");
-
-      // Show copyable code
-      document.getElementById("js-code").value = bookmarkletCode;
-      document.getElementById("code-section").classList.remove("hidden");
-    }
+   function createBookmarklet() {
+    const u = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
+    const r = encodeURIComponent(document.getElementById("room").value.trim() || "default");
+  
+    const bookmarkletCode = `javascript:(function(){
+      var s=document.createElement('script');
+      s.src='${scriptURL}?user=${u}&room=${r}';
+      document.body.appendChild(s);
+    })();`;
+  
+    // Show bookmarklet
+    const a = document.getElementById("bookmarklet");
+    a.href = bookmarkletCode;
+    a.textContent = "🎬 Drag Me to Bookmarks Bar";
+    a.classList.remove("hidden");
+  
+    // Show copyable code
+    document.getElementById("js-code").value = bookmarkletCode;
+    document.getElementById("code-section").classList.remove("hidden");
+  }
 
     function copyCode() {
       const codeBox = document.getElementById("js-code");
@@ -35,7 +39,6 @@
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
   <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md space-y-4 text-center">
     <h1 class="text-2xl font-bold text-cyan-400">Watch Together</h1>
-    <p class="text-sm text-gray-300">Sync Netflix, Prime, YouTube with friends + Chat in real-time</p>
 
     <input id="username" type="text" placeholder="Your name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
     <input id="room" type="text" placeholder="Room name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
