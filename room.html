@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Watch Together - Bookmarklet</title>
+  <title>Watch Together</title>
   <script>
     function createBookmarklet() {
       const user = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
@@ -13,7 +13,6 @@
 
       const a = document.getElementById("bookmarklet");
       a.href = bookmarkletCode;
-      a.textContent = "🎬 Drag Me to Bookmarks Bar";
       a.classList.remove("hidden");
 
       document.getElementById("js-code").value = bookmarkletCode;
@@ -32,7 +31,6 @@
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen px-4">
   <div class="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md space-y-4 text-center">
     <h1 class="text-3xl font-bold text-cyan-400">Watch Together</h1>
-    <p class="text-sm text-gray-300">Sync Netflix, Prime, YouTube with friends</p>
 
     <input id="username" type="text" placeholder="Your name"
       class="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring" />
@@ -43,10 +41,6 @@
       class="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-500 font-semibold w-full">
       Generate Bookmarklet
     </button>
-
-    <a id="bookmarklet" class="mt-4 inline-block text-cyan-400 font-bold hover:underline hidden" href="#">
-      🎬 Drag Me to Bookmarks Bar
-    </a>
 
     <div id="code-section" class="space-y-2 hidden text-left mt-4">
       <label class="block text-sm font-semibold text-gray-300">📋 Or copy the code:</label>
