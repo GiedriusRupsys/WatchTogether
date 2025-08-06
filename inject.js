@@ -117,17 +117,17 @@
 
     video.addEventListener("play", () => {
       actionsRef.push({ type: "play", username });
-      log(`▶ You played`);
+      log(`▶ ${username} played`);
     });
-
+    
     video.addEventListener("pause", () => {
       actionsRef.push({ type: "pause", username });
-      log(`⏸ You paused`);
+      log(`⏸ ${username} paused`);
     });
-
+    
     video.addEventListener("seeked", () => {
       actionsRef.push({ type: "seek", time: video.currentTime, username });
-      log(`⏩ You seeked to ${Math.round(video.currentTime)}s`);
+      log(`⏩ ${username} seeked to ${Math.round(video.currentTime)}s`);
     });
 
     chatRef.on("child_added", snap => {
