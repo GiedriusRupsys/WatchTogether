@@ -37,6 +37,13 @@
     }
   };
 
+  const formatTime = (secs) => {
+    const h = Math.floor(secs / 3600).toString().padStart(2, "0");
+    const m = Math.floor((secs % 3600) / 60).toString().padStart(2, "0");
+    const s = Math.floor(secs % 60).toString().padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
+
   const init = () => {
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -56,14 +63,14 @@
 
     const container = document.createElement("div");
     container.innerHTML = `
-      <div id="infoBox" class="fixed top-1/2 -translate-y-1/2 right-4 z-[99999] bg-black/80 text-white text-sm rounded-xl shadow-2xl p-4 space-y-2 w-80 font-sans backdrop-blur-md border border-gray-600 opacity-0 transition-opacity duration-500">
-        <div><span class="text-gray-400">Room</span>: <span id="roomName" class="text-gray-200">${room}</span></div>
-        <div><span class="text-gray-400">Users</span> (<span id="userCount">1</span>): <span id="userList" class="text-gray-100"></span></div>
-        <ul id="logBox" class="list-none space-y-1 text-xs text-gray-100 mt-1"></ul>
+      <div id="infoBox" class="fixed top-1/2 -translate-y-1/2 right-4 z-[99999] text-white text-sm rounded-xl shadow-2xl p-4 space-y-2 w-80 font-sans transition-opacity duration-500 opacity-0"
+        style="background-color: rgba(28, 28, 30, 0.6); backdrop-filter: blur(8px); border: 1px solid #444;">
+        <div><span style="color:#ccc;">Room</span>: <span id="roomName">${room}</span></div>
+        <div><span style="color:#ccc;">Users</span> (<span id="userCount">1</span>): <span id="userList"></span></div>
+        <ul id="logBox" class="list-none space-y-1 text-xs mt-1 text-gray-100"></ul>
       </div>
     `;
-
-    (video.parentElement || document.body).appendChild(container);
+    document.body.appendChild(container);
 
     const infoBox = document.getElementById("infoBox");
     const logBox = document.getElementById("logBox");
@@ -87,7 +94,6 @@
         if (!video.paused) infoBox.classList.add("opacity-0");
       }, 3000);
     };
-
     document.addEventListener("mousemove", showBox);
     video.addEventListener("play", () => infoBox.classList.add("opacity-0"));
     video.addEventListener("pause", () => infoBox.classList.remove("opacity-0"));
@@ -113,23 +119,23 @@
       }
       if (action.type === "seek") {
         video.currentTime = action.time;
-        log(`⏩ ${action.username} seeked to ${Math.round(action.time)}s`);
+        log(`⏩ ${action.username} seeked to ${formatTime(action.time)}`);
       }
     });
 
     video.addEventListener("play", () => {
       actionsRef.push({ type: "play", username });
-      log(`▶ ${username} played`);
+      log(`▶ You played`);
     });
 
     video.addEventListener("pause", () => {
       actionsRef.push({ type: "pause", username });
-      log(`⏸ ${username} paused`);
+      log(`⏸ You paused`);
     });
 
     video.addEventListener("seeked", () => {
       actionsRef.push({ type: "seek", time: video.currentTime, username });
-      log(`⏩ ${username} seeked to ${Math.round(video.currentTime)}s`);
+      log(`⏩ You seeked to ${formatTime(video.currentTime)}`);
     });
 
     chatRef.on("child_added", snap => {
