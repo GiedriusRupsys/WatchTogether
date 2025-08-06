@@ -1,7 +1,8 @@
 (function () {
   console.log("📦 Inject script starting...");
 
-  const urlParams = new URLSearchParams(window.location.search);
+  const currentScript = document.currentScript || [...document.querySelectorAll("script")].find(s => s.src.includes("inject.js"));
+  const urlParams = new URLSearchParams(currentScript?.src.split("?")[1] || "");
   const room = urlParams.get("room");
   const username = urlParams.get("user") || "Anon";
 
