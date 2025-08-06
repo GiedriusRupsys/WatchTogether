@@ -5,6 +5,10 @@
   const room = params.get("room");
   const username = params.get("user") || "Anon";
 
+  const roomMetaRef = db.ref(`${room}/meta`);
+  roomMetaRef.set({ lastActive: Date.now() });
+  roomMetaRef.onDisconnect().remove();  // Optional
+
   if (!room) {
     alert("No room specified in inject.js");
     return;
