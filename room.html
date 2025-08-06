@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Watch Together</title>
   <script>
     function createBookmarklet() {
@@ -12,9 +11,8 @@
       const bookmarkletCode =
         `javascript:(function(){var s=document.createElement('script');s.src='https://giedriusrupsys.github.io/WatchTogether/inject.js?user=${user}&room=${room}';document.body.appendChild(s);})();`;
 
-      const a = document.getElementById("bookmarklet-link");
-      a.href = bookmarkletCode;
-      document.getElementById("bookmarklet").classList.remove("hidden");
+      document.getElementById("bookmarklet").href = bookmarkletCode;
+      document.getElementById("bookmarklet-wrap").classList.remove("hidden");
 
       document.getElementById("js-code").value = bookmarkletCode;
       document.getElementById("code-section").classList.remove("hidden");
@@ -23,44 +21,44 @@
     function copyCode() {
       const codeBox = document.getElementById("js-code");
       codeBox.select();
+      codeBox.setSelectionRange(0, 99999);
       document.execCommand("copy");
     }
   </script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body class="bg-gray-950 text-white min-h-screen flex items-center justify-center px-4 font-sans">
-  <div class="bg-gray-900 p-10 rounded-3xl shadow-xl max-w-md w-full space-y-6">
-    <div class="text-center space-y-1">
-      <h1 class="text-4xl font-semibold text-cyan-400">Watch Together</h1>
-      <p class="text-gray-400 text-sm">Sync Netflix, Prime, YouTube with friends</p>
+<body class="bg-gray-950 text-white min-h-screen flex items-center justify-center px-4">
+  <div class="bg-gray-900 p-10 rounded-3xl shadow-xl max-w-md w-full space-y-6 text-center">
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold text-white">Watch Together</h1>
+      <p class="text-gray-400 text-sm">Sync Netflix, Prime, YouTube with your friends</p>
     </div>
 
     <div class="space-y-4">
       <input id="username" type="text" placeholder="Your name"
-        class="w-full px-5 py-3 rounded-xl bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
+        class="w-full px-5 py-3 border border-gray-700 rounded-xl bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
       <input id="room" type="text" placeholder="Room name"
-        class="w-full px-5 py-3 rounded-xl bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
+        class="w-full px-5 py-3 border border-gray-700 rounded-xl bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" />
+
       <button onclick="createBookmarklet()"
-        class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-bold rounded-xl transition duration-200 shadow-md">
+        class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl transition">
         🔗 Generate Bookmarklet
       </button>
     </div>
 
-    <div id="bookmarklet" class="hidden text-center">
-      <a id="bookmarklet-link"
-        class="inline-block mt-2 text-cyan-300 hover:text-cyan-400 text-sm font-medium underline transition duration-150"
-        href="#" draggable="true">
+    <div id="bookmarklet-wrap" class="hidden">
+      <a id="bookmarklet"
+        class="block mt-4 text-cyan-300 text-sm font-medium underline hover:text-cyan-400 transition" href="#">
         🎬 Drag this to your bookmarks bar
       </a>
     </div>
 
-    <div id="code-section" class="space-y-2 hidden">
-      <label for="js-code" class="text-gray-400 text-sm font-semibold">📋 Or copy this code:</label>
-      <textarea id="js-code"
-        class="w-full p-3 rounded-xl bg-gray-800 text-cyan-300 border border-gray-700 text-xs font-mono select-all resize-none h-20"
-        readonly></textarea>
+    <div id="code-section" class="space-y-2 hidden text-left">
+      <label for="js-code" class="text-gray-400 text-sm font-medium">📋 Or copy this code:</label>
+      <textarea id="js-code" readonly
+        class="w-full p-3 rounded-xl bg-gray-800 text-cyan-300 border border-gray-700 text-xs font-mono resize-none h-20 focus:outline-none select-all"></textarea>
       <button onclick="copyCode()"
-        class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold rounded-xl transition duration-200">
+        class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold rounded-xl transition">
         Copy Code
       </button>
     </div>
