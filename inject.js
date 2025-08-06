@@ -56,13 +56,14 @@
 
     const container = document.createElement("div");
     container.innerHTML = `
-      <div id="infoBox" class="fixed top-1/2 -translate-y-1/2 right-4 z-[99999] bg-[#1C1C1E]/80 text-white text-sm rounded-xl shadow-2xl p-4 space-y-2 w-80 font-sans backdrop-blur-md border border-gray-600 opacity-0 transition-opacity duration-500">
+      <div id="infoBox" class="fixed top-1/2 -translate-y-1/2 right-4 z-[99999] bg-black/80 text-white text-sm rounded-xl shadow-2xl p-4 space-y-2 w-80 font-sans backdrop-blur-md border border-gray-600 opacity-0 transition-opacity duration-500">
         <div><span class="text-gray-400">Room</span>: <span id="roomName" class="text-gray-200">${room}</span></div>
         <div><span class="text-gray-400">Users</span> (<span id="userCount">1</span>): <span id="userList" class="text-gray-100"></span></div>
         <ul id="logBox" class="list-none space-y-1 text-xs text-gray-100 mt-1"></ul>
       </div>
     `;
-    document.body.appendChild(container);
+
+    (video.parentElement || document.body).appendChild(container);
 
     const infoBox = document.getElementById("infoBox");
     const logBox = document.getElementById("logBox");
@@ -86,6 +87,7 @@
         if (!video.paused) infoBox.classList.add("opacity-0");
       }, 3000);
     };
+
     document.addEventListener("mousemove", showBox);
     video.addEventListener("play", () => infoBox.classList.add("opacity-0"));
     video.addEventListener("pause", () => infoBox.classList.remove("opacity-0"));
@@ -119,12 +121,12 @@
       actionsRef.push({ type: "play", username });
       log(`▶ ${username} played`);
     });
-    
+
     video.addEventListener("pause", () => {
       actionsRef.push({ type: "pause", username });
       log(`⏸ ${username} paused`);
     });
-    
+
     video.addEventListener("seeked", () => {
       actionsRef.push({ type: "seek", time: video.currentTime, username });
       log(`⏩ ${username} seeked to ${Math.round(video.currentTime)}s`);
