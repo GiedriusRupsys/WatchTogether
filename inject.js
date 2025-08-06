@@ -1,8 +1,11 @@
 (function () {
-  const urlParams = new URLSearchParams(window.location.search);
-  const room = urlParams.get("room");
-  const username = urlParams.get("user") || "Anon";
-
+  // Parse parameters from script tag src (NOT from window.location)
+  const thisScript = [...document.scripts].find(s => s.src.includes("inject.js"));
+  const params = new URL(thisScript.src).searchParams;
+  
+  const room = params.get("room");
+  const username = params.get("user") || "Anon";
+  
   if (!room) {
     alert("No room specified in inject.js");
     return;
