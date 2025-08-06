@@ -13,7 +13,7 @@
   const firebaseConfig = {
     apiKey: "AIzaSyB0mhn8-HiDZviiIXVNIFmmgbfGcg7m-MI",
     authDomain: "watch-together-8f006.firebaseapp.com",
-    databaseURL: "https://watch-together-8f006-default-rtdb.firebaseio.com",
+    databaseURL: "https://watch-together-8f006-default-rtdb.firebaseio.com",  // ✅ FIXED
     projectId: "watch-together-8f006",
     storageBucket: "watch-together-8f006.firebasestorage.app",
     messagingSenderId: "1050874568804",
