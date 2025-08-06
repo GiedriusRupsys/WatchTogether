@@ -40,8 +40,14 @@
   const init = () => {
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const actionsRef = db.ref(room + "/actions");
-    const chatRef = db.ref(room + "/chat");
+    const actionsRef = db.ref(`${room}/actions`);
+    const chatRef = db.ref(`${room}/chat`);
+    const presenceRef = db.ref(`${room}/presence/${username}`);
+
+    presenceRef.set(true);
+    presenceRef.onDisconnect().remove();
+
+    const presenceListRef = db.ref(`${room}/presence`);
 
     const video = document.querySelector("video");
     if (!video) {
@@ -51,91 +57,57 @@
 
     const container = document.createElement("div");
     container.innerHTML = `
-      <div id="watchUI" class="fixed top-0 right-0 z-[99999] flex items-center h-screen pointer-events-none">
-        <button id="togglePanel" class="pointer-events-auto transition-opacity duration-300 opacity-0 mr-2 bg-gray-800 text-white font-semibold px-4 py-2 rounded-full shadow hover:bg-gray-700 focus:outline-none">
-          ⬅ Chat
-        </button>
-        <div id="panel" class="hidden pointer-events-auto w-96 h-full bg-gray-900 text-white rounded-l-xl shadow-lg flex flex-col overflow-hidden">
-          <div class="bg-gray-800 px-5 py-4 border-b border-gray-700 text-lg font-semibold flex justify-between items-center">
-            Room: ${room}
-            <button id="closePanel" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
-          </div>
-          <div id="log" class="flex-1 overflow-y-auto px-4 py-3 space-y-2 text-base font-mono bg-gray-900"></div>
-          <form id="chatForm" class="border-t border-gray-800 flex bg-gray-800">
-            <input id="chatInput" type="text" placeholder="Message..."
-              class="flex-1 px-4 py-4 text-base bg-gray-800 text-white placeholder-gray-400 focus:outline-none" />
-            <button class="px-5 text-cyan-400 hover:text-white font-semibold">Send</button>
-          </form>
+      <div id="infoBox" class="fixed top-4 right-4 z-[99999] bg-gray-900 text-white text-sm rounded-xl shadow-lg p-4 space-y-2 w-80 font-sans">
+        <div class="text-cyan-400 font-semibold text-base">🎬 Watch Together</div>
+        <div><strong>Room:</strong> <span id="roomName">${room}</span></div>
+        <div><strong>Users (<span id="userCount">1</span>):</strong> <span id="userList"></span></div>
+        <div><strong>Activity:</strong>
+          <ul id="logBox" class="list-disc list-inside space-y-1 text-xs text-gray-300 mt-1"></ul>
         </div>
       </div>
     `;
     document.body.appendChild(container);
 
-    const toggleBtn = document.getElementById("togglePanel");
-    const panel = document.getElementById("panel");
-    const closePanel = document.getElementById("closePanel");
-    const logBox = document.getElementById("log");
+    const logBox = document.getElementById("logBox");
+    const userList = document.getElementById("userList");
+    const userCount = document.getElementById("userCount");
 
-    toggleBtn.onclick = () => panel.classList.toggle("hidden");
-    closePanel.onclick = () => panel.classList.add("hidden");
-
-    let hideTimeout;
-    const showToggle = () => {
-      toggleBtn.classList.remove("opacity-0");
-      clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(() => toggleBtn.classList.add("opacity-0"), 3000);
-    };
-    document.addEventListener("mousemove", showToggle);
-
-    const log = (msg, type = "normal") => {
-      const div = document.createElement("div");
-      div.textContent = msg;
-      div.className = "bg-gray-800 text-white px-4 py-2 rounded-md";
-      logBox.appendChild(div);
-      logBox.scrollTop = logBox.scrollHeight;
+    const log = (msg) => {
+      const li = document.createElement("li");
+      li.textContent = msg;
+      logBox.appendChild(li);
+      while (logBox.children.length > 3) {
+        logBox.removeChild(logBox.firstChild);
+      }
     };
 
-    // Firebase listeners
+    presenceListRef.on("value", snapshot => {
+      const users = snapshot.val() || {};
+      userList.textContent = Object.keys(users).join(", ");
+      userCount.textContent = Object.keys(users).length;
+    });
+
     actionsRef.on("child_added", snap => {
       const action = snap.val();
       if (action.username === username) return;
 
-      const now = new Date().toLocaleTimeString();
-      if (action.type === "play") {
-        video.play();
-        log(`▶️ ${now} - ${action.username} played the video`);
-      }
-      if (action.type === "pause") {
-        video.pause();
-        log(`⏸️ ${now} - ${action.username} paused the video`);
-      }
-      if (action.type === "seek") {
-        video.currentTime = action.time;
-        log(`⏩ ${now} - ${action.username} seeked to ${action.time.toFixed(1)}s`);
-      }
+      if (action.type === "play") video.play();
+      if (action.type === "pause") video.pause();
+      if (action.type === "seek") video.currentTime = action.time;
+
+      log(`▶ [${action.username}] ${action.type} ${action.time ? `@ ${Math.round(action.time)}s` : ""}`);
     });
 
     video.addEventListener("play", () => actionsRef.push({ type: "play", username }));
     video.addEventListener("pause", () => actionsRef.push({ type: "pause", username }));
     video.addEventListener("seeked", () => actionsRef.push({ type: "seek", time: video.currentTime, username }));
 
-    document.getElementById("chatForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const input = document.getElementById("chatInput");
-      const text = input.value.trim();
-      if (text) {
-        chatRef.push({ text, username });
-        input.value = "";
-      }
-    });
-
     chatRef.on("child_added", snap => {
       const msg = snap.val();
-      const now = new Date().toLocaleTimeString();
-      log(`💬 ${now} - ${msg.username}: ${msg.text}`);
+      log(`💬 [${msg.username}]: ${msg.text}`);
     });
 
-    log("✅ Joined room as " + username);
+    log(`👋 Joined as ${username}`);
   };
 
   loadTailwind();
