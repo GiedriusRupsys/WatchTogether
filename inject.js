@@ -1,11 +1,10 @@
 (function () {
-  // Parse parameters from script tag src (NOT from window.location)
   const thisScript = [...document.scripts].find(s => s.src.includes("inject.js"));
   const params = new URL(thisScript.src).searchParams;
-  
+
   const room = params.get("room");
   const username = params.get("user") || "Anon";
-  
+
   if (!room) {
     alert("No room specified in inject.js");
     return;
@@ -50,22 +49,22 @@
       return;
     }
 
-    // UI container
     const container = document.createElement("div");
     container.innerHTML = `
       <div id="watchUI" class="fixed top-0 right-0 z-[99999] flex items-center h-screen pointer-events-none">
-        <button id="togglePanel" class="pointer-events-auto transition-opacity duration-300 opacity-0 mr-2 bg-white text-gray-800 font-semibold px-3 py-1 rounded-full shadow hover:bg-gray-100 focus:outline-none">
+        <button id="togglePanel" class="pointer-events-auto transition-opacity duration-300 opacity-0 mr-2 bg-gray-800 text-white font-semibold px-4 py-2 rounded-full shadow hover:bg-gray-700 focus:outline-none">
           ⬅ Chat
         </button>
-        <div id="panel" class="hidden pointer-events-auto w-96 h-full bg-white text-gray-900 rounded-l-xl shadow-lg flex flex-col overflow-hidden">
-          <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 text-lg font-semibold flex justify-between items-center">
+        <div id="panel" class="hidden pointer-events-auto w-96 h-full bg-gray-900 text-white rounded-l-xl shadow-lg flex flex-col overflow-hidden">
+          <div class="bg-gray-800 px-5 py-4 border-b border-gray-700 text-lg font-semibold flex justify-between items-center">
             Room: ${room}
-            <button id="closePanel" class="text-gray-500 hover:text-gray-700">&times;</button>
+            <button id="closePanel" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
           </div>
-          <div id="log" class="flex-1 overflow-y-auto px-4 py-2 space-y-1 text-sm font-mono"></div>
-          <form id="chatForm" class="border-t border-gray-200 flex">
-            <input id="chatInput" type="text" placeholder="Message..." class="flex-1 px-4 py-2 text-sm bg-transparent focus:outline-none">
-            <button class="px-4 text-cyan-500 hover:text-cyan-700">Send</button>
+          <div id="log" class="flex-1 overflow-y-auto px-4 py-3 space-y-2 text-base font-mono bg-gray-900"></div>
+          <form id="chatForm" class="border-t border-gray-800 flex bg-gray-800">
+            <input id="chatInput" type="text" placeholder="Message..."
+              class="flex-1 px-4 py-4 text-base bg-gray-800 text-white placeholder-gray-400 focus:outline-none" />
+            <button class="px-5 text-cyan-400 hover:text-white font-semibold">Send</button>
           </form>
         </div>
       </div>
@@ -77,15 +76,9 @@
     const closePanel = document.getElementById("closePanel");
     const logBox = document.getElementById("log");
 
-    // Handle panel toggle
-    toggleBtn.onclick = () => {
-      panel.classList.toggle("hidden");
-    };
-    closePanel.onclick = () => {
-      panel.classList.add("hidden");
-    };
+    toggleBtn.onclick = () => panel.classList.toggle("hidden");
+    closePanel.onclick = () => panel.classList.add("hidden");
 
-    // Show toggle button on mouse move
     let hideTimeout;
     const showToggle = () => {
       toggleBtn.classList.remove("opacity-0");
@@ -94,31 +87,38 @@
     };
     document.addEventListener("mousemove", showToggle);
 
-    // Sync logging
-    const log = (msg) => {
+    const log = (msg, type = "normal") => {
       const div = document.createElement("div");
       div.textContent = msg;
+      div.className = "bg-gray-800 text-white px-4 py-2 rounded-md";
       logBox.appendChild(div);
       logBox.scrollTop = logBox.scrollHeight;
     };
 
-    // Firebase actions
+    // Firebase listeners
     actionsRef.on("child_added", snap => {
       const action = snap.val();
       if (action.username === username) return;
 
-      if (action.type === "play") video.play();
-      if (action.type === "pause") video.pause();
-      if (action.type === "seek") video.currentTime = action.time;
-
-      log(`▶ [${action.username}] ${action.type} @ ${action.time || ""}`);
+      const now = new Date().toLocaleTimeString();
+      if (action.type === "play") {
+        video.play();
+        log(`▶️ ${now} - ${action.username} played the video`);
+      }
+      if (action.type === "pause") {
+        video.pause();
+        log(`⏸️ ${now} - ${action.username} paused the video`);
+      }
+      if (action.type === "seek") {
+        video.currentTime = action.time;
+        log(`⏩ ${now} - ${action.username} seeked to ${action.time.toFixed(1)}s`);
+      }
     });
 
     video.addEventListener("play", () => actionsRef.push({ type: "play", username }));
     video.addEventListener("pause", () => actionsRef.push({ type: "pause", username }));
     video.addEventListener("seeked", () => actionsRef.push({ type: "seek", time: video.currentTime, username }));
 
-    // Chat submission
     document.getElementById("chatForm").addEventListener("submit", e => {
       e.preventDefault();
       const input = document.getElementById("chatInput");
@@ -131,10 +131,11 @@
 
     chatRef.on("child_added", snap => {
       const msg = snap.val();
-      log(`💬 [${msg.username}]: ${msg.text}`);
+      const now = new Date().toLocaleTimeString();
+      log(`💬 ${now} - ${msg.username}: ${msg.text}`);
     });
 
-    log("👋 Joined room as " + username);
+    log("✅ Joined room as " + username);
   };
 
   loadTailwind();
