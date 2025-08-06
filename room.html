@@ -1,27 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Watch Together - Bookmarklet</title>
   <script>
+    const scriptURL = "https://giedriusrupsys.github.io/WatchTogether/inject.js";
+
     function createBookmarklet() {
       const u = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
       const r = encodeURIComponent(document.getElementById("room").value.trim() || "default");
-      const s = document.getElementById("script-url").value.trim();
-      const code = `javascript:(function(){var s=document.createElement('script');s.src='${s}?user=${u}&room=${r}';document.body.appendChild(s);})();`;
 
-      document.getElementById("bookmarklet").href = code;
-      document.getElementById("bookmarklet").textContent = "🎬 Drag Me to Bookmarks Bar";
-      document.getElementById("bookmarklet").classList.remove("hidden");
+      const bookmarkletCode = `javascript:(function(){var s=document.createElement('script');s.src='${scriptURL}?user=${u}&room=${r}';document.body.appendChild(s);})();`;
+      const manualCode = `var s=document.createElement('script');s.src='${scriptURL}?user=${u}&room=${r}';document.body.appendChild(s);`;
 
-      const codeBox = document.getElementById("js-code");
-      codeBox.value = code;
-      codeBox.classList.remove("hidden");
-      document.getElementById("copy-btn").classList.remove("hidden");
+      // Show bookmarklet
+      const a = document.getElementById("bookmarklet");
+      a.href = bookmarkletCode;
+      a.textContent = "🎬 Drag Me to Bookmarks Bar";
+      a.classList.remove("hidden");
+
+      // Show copyable fields
+      document.getElementById("js-code").value = bookmarkletCode;
+      document.getElementById("manual-code").value = manualCode;
+      document.getElementById("code-section").classList.remove("hidden");
     }
 
-    function copyCode() {
-      const codeBox = document.getElementById("js-code");
+    function copyField(id) {
+      const codeBox = document.getElementById(id);
       codeBox.select();
       codeBox.setSelectionRange(0, 99999);
       document.execCommand("copy");
@@ -36,14 +41,24 @@
 
     <input id="username" type="text" placeholder="Your name" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
     <input id="room" type="text" placeholder="Room name" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
-    <input id="script-url" type="text" placeholder="Link to sync-loader-tailwind-chat.js" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
 
-    <button onclick="createBookmarklet()" class="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-400 font-semibold">Generate Bookmarklet</button>
+    <button onclick="createBookmarklet()" class="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-400 font-semibold w-full">Generate</button>
 
     <a id="bookmarklet" class="mt-4 inline-block text-cyan-600 font-bold hover:underline hidden" href="#">🎬 Drag Me to Bookmarks Bar</a>
 
-    <textarea id="js-code" class="w-full p-3 bg-gray-100 rounded border text-xs font-mono hidden" readonly></textarea>
-    <button id="copy-btn" onclick="copyCode()" class="hidden bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-400 text-sm">📋 Copy Code</button>
+    <div id="code-section" class="space-y-4 hidden text-left">
+      <div>
+        <label class="block text-sm font-semibold mb-1 text-gray-700">📋 Bookmarklet Code:</label>
+        <textarea id="js-code" class="w-full p-3 bg-gray-100 rounded border text-xs font-mono" readonly></textarea>
+        <button onclick="copyField('js-code')" class="mt-2 bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-400 text-sm">Copy Bookmarklet</button>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1 text-gray-700">💻 Console Code (for browser DevTools):</label>
+        <textarea id="manual-code" class="w-full p-3 bg-gray-100 rounded border text-xs font-mono" readonly></textarea>
+        <button onclick="copyField('manual-code')" class="mt-2 bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-400 text-sm">Copy Console Code</button>
+      </div>
+    </div>
   </div>
 </body>
 </html>
