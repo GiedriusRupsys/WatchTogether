@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Watch Together - Room</title>
+</head>
+<body>
+  <h2>Enter Room ID</h2>
+  <input id="roomId" placeholder="Room name">
+  <button onclick="joinRoom()">Join Room</button>
+  <p id="status"></p>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0mhn8-HiDZviiIXVNIFmmgbfGcg7m-MI",
+      authDomain: "watch-together-8f006.firebaseapp.com",
+      databaseURL: "https://watch-together-8f006-default-rtdb.firebaseio.com",
+      projectId: "watch-together-8f006",
+      storageBucket: "watch-together-8f006.firebasestorage.app",
+      messagingSenderId: "1050874568804",
+      appId: "1:1050874568804:web:d87ddaeaa0112e3399bf71"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function joinRoom() {
+      const roomId = document.getElementById("roomId").value.trim();
+      if (!roomId) return alert("Enter a room name");
+      localStorage.setItem("watchTogetherRoom", roomId);
+      document.getElementById("status").innerText = "Room joined: " + roomId;
+    }
+  </script>
+</body>
+</html>
