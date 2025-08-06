@@ -11,7 +11,6 @@
       const r = encodeURIComponent(document.getElementById("room").value.trim() || "default");
 
       const bookmarkletCode = `javascript:(function(){var s=document.createElement('script');s.src='${scriptURL}?user=${u}&room=${r}';document.body.appendChild(s);})();`;
-      const manualCode = `var s=document.createElement('script');s.src='${scriptURL}?user=${u}&room=${r}';document.body.appendChild(s);`;
 
       // Show bookmarklet
       const a = document.getElementById("bookmarklet");
@@ -19,14 +18,13 @@
       a.textContent = "🎬 Drag Me to Bookmarks Bar";
       a.classList.remove("hidden");
 
-      // Show copyable fields
+      // Show copyable code
       document.getElementById("js-code").value = bookmarkletCode;
-      document.getElementById("manual-code").value = manualCode;
       document.getElementById("code-section").classList.remove("hidden");
     }
 
-    function copyField(id) {
-      const codeBox = document.getElementById(id);
+    function copyCode() {
+      const codeBox = document.getElementById("js-code");
       codeBox.select();
       codeBox.setSelectionRange(0, 99999);
       document.execCommand("copy");
@@ -34,30 +32,22 @@
   </script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-900 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4 text-center">
-    <h1 class="text-2xl font-bold text-cyan-600">Watch Together</h1>
-    <p class="text-sm text-gray-600">Sync Netflix, Prime, YouTube with friends + Chat in real-time</p>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+  <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md space-y-4 text-center">
+    <h1 class="text-2xl font-bold text-cyan-400">Watch Together</h1>
+    <p class="text-sm text-gray-300">Sync Netflix, Prime, YouTube with friends + Chat in real-time</p>
 
-    <input id="username" type="text" placeholder="Your name" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
-    <input id="room" type="text" placeholder="Room name" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
+    <input id="username" type="text" placeholder="Your name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
+    <input id="room" type="text" placeholder="Room name" class="w-full px-4 py-2 border border-gray-600 rounded bg-gray-700 text-white focus:outline-none focus:ring" />
 
-    <button onclick="createBookmarklet()" class="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-400 font-semibold w-full">Generate</button>
+    <button onclick="createBookmarklet()" class="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-500 font-semibold w-full">Generate Bookmarklet</button>
 
-    <a id="bookmarklet" class="mt-4 inline-block text-cyan-600 font-bold hover:underline hidden" href="#">🎬 Drag Me to Bookmarks Bar</a>
+    <a id="bookmarklet" class="mt-4 inline-block text-cyan-400 font-bold hover:underline hidden" href="#">🎬 Drag Me to Bookmarks Bar</a>
 
-    <div id="code-section" class="space-y-4 hidden text-left">
-      <div>
-        <label class="block text-sm font-semibold mb-1 text-gray-700">📋 Bookmarklet Code:</label>
-        <textarea id="js-code" class="w-full p-3 bg-gray-100 rounded border text-xs font-mono" readonly></textarea>
-        <button onclick="copyField('js-code')" class="mt-2 bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-400 text-sm">Copy Bookmarklet</button>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-1 text-gray-700">💻 Console Code (for browser DevTools):</label>
-        <textarea id="manual-code" class="w-full p-3 bg-gray-100 rounded border text-xs font-mono" readonly></textarea>
-        <button onclick="copyField('manual-code')" class="mt-2 bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-400 text-sm">Copy Console Code</button>
-      </div>
+    <div id="code-section" class="space-y-2 hidden text-left mt-4">
+      <label class="block text-sm font-semibold mb-1 text-gray-300">📋 Or copy the URL-safe code:</label>
+      <textarea id="js-code" class="w-full p-3 bg-gray-700 text-white rounded border border-gray-600 text-xs font-mono" readonly></textarea>
+      <button onclick="copyCode()" class="mt-1 bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-500 text-sm">Copy Code</button>
     </div>
   </div>
 </body>
