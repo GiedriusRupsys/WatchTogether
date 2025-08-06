@@ -1,103 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Watch Together</title>
-</head>
-<body>
-  <h2>Watch Together</h2>
-  <p>1. Enter a room name and click "Join Room".<br>
-     2. Paste the Netflix/Prime/YouTube link and click "Share Link" so others can join.<br>
-     3. Everyone opens the same video and then clicks "Start Sync".</p>
-
-  <input id="roomId" placeholder="Room name">
-  <button onclick="joinRoom()">Join Room</button>
-  <br><br>
-
-  <input id="videoLink" placeholder="Paste video link here" style="width:300px;">
-  <button onclick="shareLink()">Share Link</button>
-  <p>Shared link: <a id="sharedLink" href="#" target="_blank">None yet</a></p>
-  
-  <button onclick="startSync()">Start Sync</button>
-  <p id="status"></p>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+  <title>Watch Together - Bookmarklet</title>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB0mhn8-HiDZviiIXVNIFmmgbfGcg7m-MI",
-      authDomain: "watch-together-8f006.firebaseapp.com",
-      databaseURL: "https://watch-together-8f006-default-rtdb.firebaseio.com",
-      projectId: "watch-together-8f006",
-      storageBucket: "watch-together-8f006.firebasestorage.app",
-      messagingSenderId: "1050874568804",
-      appId: "1:1050874568804:web:d87ddaeaa0112e3399bf71"
-    };
+    function createBookmarklet() {
+      const u = encodeURIComponent(document.getElementById("username").value.trim() || "Anon");
+      const r = encodeURIComponent(document.getElementById("room").value.trim() || "default");
+      const s = document.getElementById("script-url").value.trim();
+      const code = `javascript:(function(){var s=document.createElement('script');s.src='${s}?user=${u}&room=${r}';document.body.appendChild(s);})();`;
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    let currentRoom = null;
+      document.getElementById("bookmarklet").href = code;
+      document.getElementById("bookmarklet").textContent = "🎬 Drag Me to Bookmarks Bar";
+      document.getElementById("bookmarklet").classList.remove("hidden");
 
-    function joinRoom() {
-      const roomId = document.getElementById("roomId").value.trim();
-      if (!roomId) return alert("Enter a room name");
-      localStorage.setItem("watchTogetherRoom", roomId);
-      currentRoom = roomId;
-      document.getElementById("status").innerText = "Room joined: " + roomId;
-
-      // Listen for shared video link updates
-      db.ref(roomId + "/link").on("value", snap => {
-        const link = snap.val();
-        if (link) {
-          const a = document.getElementById("sharedLink");
-          a.href = link;
-          a.innerText = link;
-        }
-      });
+      const codeBox = document.getElementById("js-code");
+      codeBox.value = code;
+      codeBox.classList.remove("hidden");
+      document.getElementById("copy-btn").classList.remove("hidden");
     }
 
-    function shareLink() {
-      const link = document.getElementById("videoLink").value.trim();
-      if (!link) return alert("Paste a link first!");
-      if (!currentRoom) return alert("Join a room first!");
-      db.ref(currentRoom + "/link").set(link);
-    }
-
-    function startSync() {
-      const roomId = localStorage.getItem("watchTogetherRoom");
-      if (!roomId) return alert("Join a room first!");
-      
-      alert("Run this page in the same tab as your video (or use bookmarklet/extension).");
-
-      const video = document.querySelector("video");
-      if (!video) {
-        alert("No video found on this page. You must run this in the same tab as the video.");
-        return;
-      }
-
-      // Listen for remote changes
-      db.ref(roomId + "/sync").on("value", snap => {
-        const data = snap.val();
-        if (!data) return;
-        if (data.action === "play" && video.paused) video.play();
-        if (data.action === "pause" && !video.paused) video.pause();
-        if (data.action === "seek" && Math.abs(video.currentTime - data.time) > 1) {
-          video.currentTime = data.time;
-        }
-      });
-
-      // Send local changes
-      function send(action, time) {
-        db.ref(roomId + "/sync").set({ action, time: time || video.currentTime });
-      }
-
-      video.addEventListener("play", () => send("play"));
-      video.addEventListener("pause", () => send("pause"));
-      video.addEventListener("seeked", () => send("seek", video.currentTime));
-
-      document.getElementById("status").innerText = "Sync started!";
+    function copyCode() {
+      const codeBox = document.getElementById("js-code");
+      codeBox.select();
+      codeBox.setSelectionRange(0, 99999);
+      document.execCommand("copy");
     }
   </script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md space-y-4 text-center">
+    <h1 class="text-2xl font-bold text-cyan-600">Watch Together</h1>
+    <p class="text-sm text-gray-600">Sync Netflix, Prime, YouTube with friends + Chat in real-time</p>
+
+    <input id="username" type="text" placeholder="Your name" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
+    <input id="room" type="text" placeholder="Room name" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
+    <input id="script-url" type="text" placeholder="Link to sync-loader-tailwind-chat.js" class="w-full px-4 py-2 border rounded focus:outline-none focus:ring" />
+
+    <button onclick="createBookmarklet()" class="bg-cyan-500 text-white px-4 py-2 rounded hover:bg-cyan-400 font-semibold">Generate Bookmarklet</button>
+
+    <a id="bookmarklet" class="mt-4 inline-block text-cyan-600 font-bold hover:underline hidden" href="#">🎬 Drag Me to Bookmarks Bar</a>
+
+    <textarea id="js-code" class="w-full p-3 bg-gray-100 rounded border text-xs font-mono hidden" readonly></textarea>
+    <button id="copy-btn" onclick="copyCode()" class="hidden bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-400 text-sm">📋 Copy Code</button>
+  </div>
 </body>
 </html>
