@@ -5,10 +5,6 @@
   const room = params.get("room");
   const username = params.get("user") || "Anon";
 
-  const roomMetaRef = db.ref(`${room}/meta`);
-  roomMetaRef.set({ lastActive: Date.now() });
-  roomMetaRef.onDisconnect().remove();  // Optional
-
   if (!room) {
     alert("No room specified in inject.js");
     return;
@@ -49,26 +45,32 @@
   };
 
   const init = () => {
+    console.log("Initializing Firebase...");
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
     const actionsRef = db.ref(`${room}/actions`);
     const presenceRef = db.ref(`${room}/presence/${username}`);
     const presenceListRef = db.ref(`${room}/presence`);
+    const roomMetaRef = db.ref(`${room}/meta`);
+
+    // Room lifecycle
+    roomMetaRef.set({ lastActive: Date.now() });
+    roomMetaRef.onDisconnect().remove();
 
     presenceRef.set(true);
     presenceRef.onDisconnect().remove();
 
     const video = document.querySelector("video");
     if (!video) {
-      alert("No video element found.");
+      console.warn("No video element found on page.");
       return;
     }
 
-    // UI container
     const container = document.createElement("div");
     container.innerHTML = `
       <div id="infoBox" class="fixed top-1/2 -translate-y-1/2 right-4 z-[99999] text-white text-sm rounded-xl shadow-2xl p-4 space-y-2 w-80 font-sans transition-opacity duration-500 opacity-0"
-        style="background-color: rgba(28, 28, 30, 0.5); backdrop-filter: blur(12px); border: 1px solid #555;">
+        style="background-color: rgba(28, 28, 30, 0.6); backdrop-filter: blur(8px); border: 1px solid #444;">
         <div class="flex justify-between">
           <div><span class="text-gray-400">Room</span>: <span id="roomName">${room}</span></div>
           <div id="connectionStatus" class="text-green-400">Connected</div>
@@ -86,6 +88,7 @@
     const connectionStatus = document.getElementById("connectionStatus");
 
     const log = (msg) => {
+      console.log("[WatchTogether]", msg);
       const li = document.createElement("li");
       li.textContent = msg;
       logBox.appendChild(li);
@@ -113,7 +116,6 @@
       userCount.textContent = names.length;
     });
 
-    // Prevent feedback loop
     let lastAction = { type: null, time: null };
 
     actionsRef.on("child_added", snap => {
@@ -121,20 +123,20 @@
       if (action.username === username) return;
 
       if (action.type === "play" && video.paused) {
-        video.play();
         log(`▶ ${action.username} played`);
+        video.play().catch(e => console.warn("Play error:", e));
         lastAction = action;
       }
 
       if (action.type === "pause" && !video.paused) {
-        video.pause();
         log(`⏸ ${action.username} paused`);
+        video.pause();
         lastAction = action;
       }
 
       if (action.type === "seek" && Math.abs(video.currentTime - action.time) > 1) {
-        video.currentTime = action.time;
         log(`⏩ ${action.username} seeked to ${formatTime(action.time)}`);
+        video.currentTime = action.time;
         lastAction = action;
       }
     });
@@ -164,12 +166,12 @@
       }
     });
 
-    // Firebase connection status
     firebase.database().ref(".info/connected").on("value", (snap) => {
       const connected = snap.val() === true;
       connectionStatus.textContent = connected ? "Connected" : "Disconnected";
       connectionStatus.classList.toggle("text-green-400", connected);
       connectionStatus.classList.toggle("text-red-400", !connected);
+      console.log("[Firebase] Connection status:", connected);
     });
 
     log(`👋 Joined as ${username}`);
