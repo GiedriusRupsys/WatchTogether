@@ -13,11 +13,11 @@
   const firebaseConfig = {
     apiKey: "AIzaSyB0mhn8-HiDZviiIXVNIFmmgbfGcg7m-MI",
     authDomain: "watch-together-8f006.firebaseapp.com",
+    databaseURL: "https://watch-together-8f006-default-rtdb.firebaseio.com",
     projectId: "watch-together-8f006",
-    storageBucket: "watch-together-8f006.appspot.com",
+    storageBucket: "watch-together-8f006.firebasestorage.app",
     messagingSenderId: "1050874568804",
-    appId: "1:1050874568804:web:d87ddaeaa0112e3399bf71",
-    databaseURL: "https://watch-together-8f006-default-rtdb.europe-west1.firebasedatabase.app/"
+    appId: "1:1050874568804:web:d87ddaeaa0112e3399bf71"
   };
 
   const loadScript = (src, cb) => {
