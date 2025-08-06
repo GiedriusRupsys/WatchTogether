@@ -2,12 +2,23 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Watch Together - Room</title>
+  <title>Watch Together</title>
 </head>
 <body>
-  <h2>Enter Room ID</h2>
+  <h2>Watch Together</h2>
+  <p>1. Enter a room name and click "Join Room".<br>
+     2. Paste the Netflix/Prime/YouTube link and click "Share Link" so others can join.<br>
+     3. Everyone opens the same video and then clicks "Start Sync".</p>
+
   <input id="roomId" placeholder="Room name">
   <button onclick="joinRoom()">Join Room</button>
+  <br><br>
+
+  <input id="videoLink" placeholder="Paste video link here" style="width:300px;">
+  <button onclick="shareLink()">Share Link</button>
+  <p>Shared link: <a id="sharedLink" href="#" target="_blank">None yet</a></p>
+  
+  <button onclick="startSync()">Start Sync</button>
   <p id="status"></p>
 
   <!-- Firebase SDK -->
@@ -26,12 +37,66 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    let currentRoom = null;
 
     function joinRoom() {
       const roomId = document.getElementById("roomId").value.trim();
       if (!roomId) return alert("Enter a room name");
       localStorage.setItem("watchTogetherRoom", roomId);
+      currentRoom = roomId;
       document.getElementById("status").innerText = "Room joined: " + roomId;
+
+      // Listen for shared video link updates
+      db.ref(roomId + "/link").on("value", snap => {
+        const link = snap.val();
+        if (link) {
+          const a = document.getElementById("sharedLink");
+          a.href = link;
+          a.innerText = link;
+        }
+      });
+    }
+
+    function shareLink() {
+      const link = document.getElementById("videoLink").value.trim();
+      if (!link) return alert("Paste a link first!");
+      if (!currentRoom) return alert("Join a room first!");
+      db.ref(currentRoom + "/link").set(link);
+    }
+
+    function startSync() {
+      const roomId = localStorage.getItem("watchTogetherRoom");
+      if (!roomId) return alert("Join a room first!");
+      
+      alert("Run this page in the same tab as your video (or use bookmarklet/extension).");
+
+      const video = document.querySelector("video");
+      if (!video) {
+        alert("No video found on this page. You must run this in the same tab as the video.");
+        return;
+      }
+
+      // Listen for remote changes
+      db.ref(roomId + "/sync").on("value", snap => {
+        const data = snap.val();
+        if (!data) return;
+        if (data.action === "play" && video.paused) video.play();
+        if (data.action === "pause" && !video.paused) video.pause();
+        if (data.action === "seek" && Math.abs(video.currentTime - data.time) > 1) {
+          video.currentTime = data.time;
+        }
+      });
+
+      // Send local changes
+      function send(action, time) {
+        db.ref(roomId + "/sync").set({ action, time: time || video.currentTime });
+      }
+
+      video.addEventListener("play", () => send("play"));
+      video.addEventListener("pause", () => send("pause"));
+      video.addEventListener("seeked", () => send("seek", video.currentTime));
+
+      document.getElementById("status").innerText = "Sync started!";
     }
   </script>
 </body>
